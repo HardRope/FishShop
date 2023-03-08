@@ -101,8 +101,23 @@ class Moltin():
         if not self.__check_token_alive():
             self.__update_token()
         url = f'https://api.moltin.com/v2/carts/{cart_id}/items/{item_id}'
-        headers = {'Authorization': f'Bearer {access_token}'}
+        headers = {'Authorization': f'Bearer {self.token}'}
         response = requests.delete(url, headers=headers)
         response.raise_for_status()
         return True
 
+    def create_customer(self, name, email):
+        if not self.__check_token_alive():
+            self.__update_token()
+        url = 'https://api.moltin.com/v2/customers'
+        headers = {'Authorization': f'Bearer {self.token}'}
+        customer_collection = {
+            'data': {
+                'type': 'customer',
+                'name': name,
+                'email': email
+            }
+        }
+        response = requests.post(url, headers=headers, json=customer_collection)
+        response.raise_for_status()
+        return True

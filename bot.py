@@ -52,14 +52,12 @@ def handle_users_reply(update, context, db, moltin):
         'PRODUCTS': partial(products_handler, moltin=moltin),
         'PRODUCT': partial(product_handler, moltin=moltin),
         'CART': partial(cart_handler, moltin=moltin),
-        'GET_CONTACT': contact_handler,
+        'GET_CONTACT': partial(contact_handler, moltin=moltin),
     }
 
-    print(user_state)                                                   # отладочный принт
     state_handler = states_functions[user_state]
     try:
         next_state = state_handler(update, context)
-        print(next_state)                                               # отладочный принт
         db.set(chat_id, next_state)
     except Exception as err:
         error(user_state, err)
@@ -75,6 +73,7 @@ if __name__ == '__main__':
     moltin_id = env('MOLTIN_CLIENT_ID')
     moltin_secret = env('MOLTIN_CLIENT_SECRET')
     tg_token = env('TELEGRAM_TOKEN')
+
     db = redis.Redis(
         host=env('REDIS_HOST'),
         port=env('REDIS_PORT'),

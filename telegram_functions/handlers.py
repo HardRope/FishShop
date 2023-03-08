@@ -5,6 +5,7 @@ from .keyboards import (
     products_menu,
     product_menu,
     cart_menu,
+    back_menu
 )
 
 def format_product_to_text(product):
@@ -20,7 +21,7 @@ def format_product_to_text(product):
     return product_text
 
 
-def send_main_menu(context, chat_id, message_id, message=None):
+def send_main_menu(context, chat_id, message_id):
     message_text = 'Добро пожаловать в самый рыбный магазин!'
 
     context.bot.send_message(
@@ -156,7 +157,7 @@ def cart_handler(update, context, moltin):
         context.bot.send_message(
             chat_id=chat_id,
             text=dedent(message_text),
-            reply_markup=cart_menu()
+            reply_markup=back_menu()
         )
         context.bot.delete_message(
             chat_id=chat_id,
@@ -171,7 +172,7 @@ def cart_handler(update, context, moltin):
         return 'CART'
 
 
-def contact_handler(update, context):
+def contact_handler(update, context, moltin):
     query = update.callback_query
     if update.message:
         chat_id = update.message.chat_id
@@ -183,10 +184,12 @@ def contact_handler(update, context):
         return
 
     if query and query.data == 'back':
-        send_cart_menu(context, chat_id, message_id)
+        products = moltin.get_cart_items(chat_id)
+        send_cart_menu(context, chat_id, message_id, products)
         return 'CART'
     else:
-        user_email = update.message.text
-
+        customer_email = update.message.text
+        customer_name = update.message.chat.username
+        moltin.create_customer(customer_name, customer_email)
         send_main_menu(context, chat_id, message_id)
         return 'MAIN_MENU'
