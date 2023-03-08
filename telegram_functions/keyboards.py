@@ -11,7 +11,9 @@ def main_menu():
 
 
 def products_menu(products):
-    inline_keyboard = [[InlineKeyboardButton(f'{j}', callback_data=i)] for i, j in products.items()]
+    inline_keyboard = [
+        [InlineKeyboardButton(f'{product.get("attributes").get("name")}', callback_data=product.get('id'))]
+        for product in products]
     inline_keyboard += [
         [InlineKeyboardButton('Назад', callback_data='back')],
     ]
@@ -35,7 +37,9 @@ def product_menu():
 
 
 def cart_menu(products):
-    inline_keyboard = [[InlineKeyboardButton(f'Удалить {product.name}', callback_data=product.id)] for product in products]
+    inline_keyboard = [
+        [InlineKeyboardButton(f'Удалить {product.get("name")}', callback_data=product.get('id'))]
+        for product in products]
     inline_keyboard += [
         [InlineKeyboardButton('Оплатить', callback_data='pay')],
         [InlineKeyboardButton('В меню', callback_data='main')],

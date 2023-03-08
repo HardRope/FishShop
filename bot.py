@@ -48,10 +48,10 @@ def handle_users_reply(update, context, db, moltin):
 
     states_functions = {
         'START': start,
-        'MAIN_MENU': main_menu_handler,
-        'PRODUCTS': products_handler,
-        'PRODUCT': product_handler,
-        'CART': cart_handler,
+        'MAIN_MENU': partial(main_menu_handler, moltin=moltin),
+        'PRODUCTS': partial(products_handler, moltin=moltin),
+        'PRODUCT': partial(product_handler, moltin=moltin),
+        'CART': partial(cart_handler, moltin=moltin),
         'GET_CONTACT': contact_handler,
     }
 

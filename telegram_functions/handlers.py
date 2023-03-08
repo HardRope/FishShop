@@ -7,6 +7,18 @@ from .keyboards import (
     cart_menu,
 )
 
+def format_product_to_text(product):
+    name = product.get('name')
+    description = product.get('description')
+    quantity = product.get('quantity')
+    price = product.get('meta').get('display_price').get('without_tax').get('unit').get('formatted')
+    value = product.get('meta').get('display_price').get('without_tax').get('value').get('formatted')
+    product_text = f'''{name}
+{description}
+{price} per kg
+{quantity} kg in cart for {value}\n\n'''
+    return product_text
+
 
 def send_main_menu(context, chat_id, message_id, message=None):
     message_text = 'Добро пожаловать в самый рыбный магазин!'
@@ -22,11 +34,8 @@ def send_main_menu(context, chat_id, message_id, message=None):
     )
 
 
-
-def send_products_menu(context, chat_id, message_id):
+def send_products_menu(context, chat_id, message_id, products):
     message_text = 'Наш ассортимент'
-    products = [{'id': 'name'}]
-
     context.bot.send_message(
         chat_id=chat_id,
         text=dedent(message_text),
@@ -38,25 +47,35 @@ def send_products_menu(context, chat_id, message_id):
     )
 
 
-def send_product_menu(context, chat_id, message_id, product):
-    message_text = 'Инфо о продукте'
-    context.bot.send_message(
+def send_product_menu(context, chat_id, message_id, product, image_url):
+    product_id = product.get('id')
+    name = product.get('attributes').get('name')
+    description = product.get('attributes').get('description')
+    cost = product.get('meta').get('display_price').get('without_tax').get('formatted')
+
+    message_text = f'''{name}\nОписание:\n{description}\nСтоимость: {cost}'''
+    context.bot.send_photo(
         chat_id=chat_id,
-        text=dedent(message_text),
+        photo=image_url,
+        caption=dedent(message_text),
         reply_markup=product_menu()
     )
     context.bot.delete_message(
         chat_id=chat_id,
         message_id=message_id
     )
+    context.user_data['product_id'] = product_id
 
 
-def send_cart_menu(context, chat_id, message_id):
-    message_text = 'Блаблабла корзина'
+def send_cart_menu(context, chat_id, message_id, products):
+    message_text = ''
+    for product in products:
+        message_text += format_product_to_text(product)
+
     context.bot.send_message(
         chat_id=chat_id,
         text=dedent(message_text),
-        reply_markup=cart_menu()
+        reply_markup=cart_menu(products)
     )
     context.bot.delete_message(
         chat_id=chat_id,
@@ -72,20 +91,22 @@ def start(update, context):
     return 'MAIN_MENU'
 
 
-def main_menu_handler(update, context):
+def main_menu_handler(update, context, moltin):
     query = update.callback_query
     chat_id = update.callback_query.message.chat_id
     message_id = update.callback_query.message.message_id
 
     if query.data == 'products':
-        send_products_menu(context, chat_id, message_id)
+        products = moltin.get_products()
+        send_products_menu(context, chat_id, message_id, products)
         return 'PRODUCTS'
     if query.data == 'cart':
-        send_cart_menu(context, chat_id, message_id)
+        products = moltin.get_cart_items(chat_id)
+        send_cart_menu(context, chat_id, message_id, products)
         return 'CART'
 
 
-def products_handler(update, context):
+def products_handler(update, context, moltin):
     query = update.callback_query
     chat_id = update.callback_query.message.chat_id
     message_id = update.callback_query.message.message_id
@@ -94,29 +115,35 @@ def products_handler(update, context):
         send_main_menu(context, chat_id, message_id)
         return 'MAIN_MENU'
     else:
-        context.user_data['product'] = query.data
-        send_product_menu(context, chat_id, message_id)
+        product_id = query.data
+        product = moltin.get_product(product_id)
+        image_id = product.get('relationships').get('main_image').get('data').get('id')
+        image_url = moltin.get_image_url(image_id)
+        send_product_menu(context, chat_id, message_id, product, image_url)
         return 'PRODUCT'
 
 
-
-
-def product_handler(update, context):
+def product_handler(update, context, moltin):
     query = update.callback_query
     chat_id = update.callback_query.message.chat_id
     message_id = update.callback_query.message.message_id
 
-    product_id = context.user_data.pop('product')
+    product_id = context.user_data.get('product_id')
 
     if query.data.isdigit():
-        #TODO to dooo
+        quantity = query.data
+        product = moltin.get_product(product_id)
+        # print(product_id, quantity, product, sep='\n')
+        moltin.add_product_to_cart(chat_id, product, quantity)
         return 'PRODUCT'
     if query.data == 'back':
-        send_products_menu(context, chat_id, message_id)
+        context.user_data.pop('product_id')
+        products = moltin.get_products()
+        send_products_menu(context, chat_id, message_id, products)
         return 'PRODUCTS'
 
 
-def cart_handler(update, context):
+def cart_handler(update, context, moltin):
     query = update.callback_query
     chat_id = update.callback_query.message.chat_id
     message_id = update.callback_query.message.message_id
@@ -136,6 +163,12 @@ def cart_handler(update, context):
             message_id=message_id
         )
         return 'GET_CONTACT'
+    else:
+        product_id = query.data
+        moltin.delete_item(chat_id, product_id)
+        products = moltin.get_cart_items(chat_id)
+        send_cart_menu(context, chat_id, message_id, products)
+        return 'CART'
 
 
 def contact_handler(update, context):
