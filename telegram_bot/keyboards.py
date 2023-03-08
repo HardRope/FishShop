@@ -1,6 +1,6 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-def main_menu():
+def get_main_menu_keyboard():
     inline_keyboard = [
         [InlineKeyboardButton('Ассортимент', callback_data='products')],
         [InlineKeyboardButton('Корзина', callback_data='cart')],
@@ -10,7 +10,7 @@ def main_menu():
     return inline_kb_markup
 
 
-def products_menu(products):
+def get_products_keyboard(products):
     inline_keyboard = [
         [InlineKeyboardButton(f'{product.get("attributes").get("name")}', callback_data=product.get('id'))]
         for product in products]
@@ -22,7 +22,7 @@ def products_menu(products):
     return inline_kb_markup
 
 
-def product_menu():
+def get_product_keyboard():
     inline_keyboard = [
         [
             InlineKeyboardButton('1 кг', callback_data=1),
@@ -36,7 +36,7 @@ def product_menu():
     return inline_kb_markup
 
 
-def cart_menu(products):
+def get_cart_keyboard(products):
     inline_keyboard = [
         [InlineKeyboardButton(f'Удалить {product.get("name")}', callback_data=product.get('id'))]
         for product in products]
@@ -49,7 +49,7 @@ def cart_menu(products):
     return inline_kb_markup
 
 
-def back_menu():
+def get_back_keyboard():
     inline_keyboard = [
         [InlineKeyboardButton('Назад', callback_data='back')],
     ]

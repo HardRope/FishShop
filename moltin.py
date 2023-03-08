@@ -24,8 +24,7 @@ class Moltin():
 
     def __check_token_alive(self):
         current_timestamp = int(time.time())
-        if current_timestamp >= self.expires_at:
-            return False
+        return current_timestamp <= self.expires_at
 
     def get_products(self):
         if not self.__check_token_alive():

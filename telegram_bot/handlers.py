@@ -1,11 +1,11 @@
 from textwrap import dedent
 
 from .keyboards import (
-    main_menu,
-    products_menu,
-    product_menu,
-    cart_menu,
-    back_menu
+    get_main_menu_keyboard,
+    get_products_keyboard,
+    get_product_keyboard,
+    get_cart_keyboard,
+    get_back_keyboard
 )
 
 def format_product_to_text(product):
@@ -14,10 +14,7 @@ def format_product_to_text(product):
     quantity = product.get('quantity')
     price = product.get('meta').get('display_price').get('without_tax').get('unit').get('formatted')
     value = product.get('meta').get('display_price').get('without_tax').get('value').get('formatted')
-    product_text = f'''{name}
-{description}
-{price} per kg
-{quantity} kg in cart for {value}\n\n'''
+    product_text = f'''{name}\n{description}\n{price} per kg\n{quantity} kg in cart for {value}\n\n'''
     return product_text
 
 
@@ -27,7 +24,7 @@ def send_main_menu(context, chat_id, message_id):
     context.bot.send_message(
         chat_id=chat_id,
         text=dedent(message_text),
-        reply_markup=main_menu()
+        reply_markup=get_main_menu_keyboard()
     )
     context.bot.delete_message(
         chat_id=chat_id,
@@ -40,7 +37,7 @@ def send_products_menu(context, chat_id, message_id, products):
     context.bot.send_message(
         chat_id=chat_id,
         text=dedent(message_text),
-        reply_markup=products_menu(products)
+        reply_markup=get_products_keyboard(products)
     )
     context.bot.delete_message(
         chat_id=chat_id,
@@ -59,7 +56,7 @@ def send_product_menu(context, chat_id, message_id, product, image_url):
         chat_id=chat_id,
         photo=image_url,
         caption=dedent(message_text),
-        reply_markup=product_menu()
+        reply_markup=get_product_keyboard()
     )
     context.bot.delete_message(
         chat_id=chat_id,
@@ -76,7 +73,7 @@ def send_cart_menu(context, chat_id, message_id, products):
     context.bot.send_message(
         chat_id=chat_id,
         text=dedent(message_text),
-        reply_markup=cart_menu(products)
+        reply_markup=get_cart_keyboard(products)
     )
     context.bot.delete_message(
         chat_id=chat_id,
@@ -134,7 +131,6 @@ def product_handler(update, context, moltin):
     if query.data.isdigit():
         quantity = query.data
         product = moltin.get_product(product_id)
-        # print(product_id, quantity, product, sep='\n')
         moltin.add_product_to_cart(chat_id, product, quantity)
         return 'PRODUCT'
     if query.data == 'back':
@@ -157,7 +153,7 @@ def cart_handler(update, context, moltin):
         context.bot.send_message(
             chat_id=chat_id,
             text=dedent(message_text),
-            reply_markup=back_menu()
+            reply_markup=get_back_keyboard()
         )
         context.bot.delete_message(
             chat_id=chat_id,

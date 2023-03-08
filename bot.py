@@ -12,7 +12,7 @@ from telegram.ext import (
 )
 
 from moltin import Moltin
-from telegram_functions.handlers import (
+from telegram_bot.handlers import (
     start,
     main_menu_handler,
     products_handler,
@@ -24,7 +24,7 @@ from telegram_functions.handlers import (
 logger = logging.getLogger(__name__)
 
 
-def error(state, error):
+def send_error(state, error):
     logger.warning(f'State {state} caused error {error}')
 
 
@@ -60,7 +60,7 @@ def handle_users_reply(update, context, db, moltin):
         next_state = state_handler(update, context)
         db.set(chat_id, next_state)
     except Exception as err:
-        error(user_state, err)
+        send_error(user_state, err)
 
 
 if __name__ == '__main__':
@@ -90,7 +90,6 @@ if __name__ == '__main__':
     dispatcher.add_handler(CallbackQueryHandler(connected_db_handler))
     dispatcher.add_handler(MessageHandler(Filters.text, connected_db_handler))
     dispatcher.add_handler(CommandHandler('start', connected_db_handler))
-    dispatcher.add_error_handler(error)
 
     updater.start_polling()
     updater.idle()
