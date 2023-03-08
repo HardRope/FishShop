@@ -36,7 +36,25 @@ class Moltin():
         response.raise_for_status()
         return response.json().get('data')
 
-    def add_product_to_cart(self, cart_id, product):
+    def get_product(self, product_id):
+        if not self.__check_token_alive():
+            self.__update_token()
+        url = f'https://api.moltin.com/catalog/products/{product_id}'
+        headers = {'Authorization': f'Bearer {self.token}'}
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json().get('data')
+
+    def get_image_url(self, image_id):
+        if not self.__check_token_alive():
+            self.__update_token()
+        url = f'https://api.moltin.com/v2/files/{image_id}'
+        headers = {'Authorization': f'Bearer {self.token}'}
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json().get('data').get('link').get('href')
+
+    def add_product_to_cart(self, cart_id, product, quantity):
         if not self.__check_token_alive():
             self.__update_token()
         url = f'https://api.moltin.com/v2/carts/{cart_id}/items'
@@ -49,8 +67,8 @@ class Moltin():
                 'type': 'custom_item',
                 'name': product.get('attributes').get('name'),
                 'sku': product.get('attributes').get('sku'),
-                'description': product.get('attributes').get('description'),
-                'quantity': 1,
+                'description': product.get('attributes').get('description', 'Нет описания'),
+                'quantity': int(quantity),
                 'price': {
                     'amount': product.get('attributes').get('price').get('USD').get('amount'),
                 },
@@ -67,8 +85,8 @@ class Moltin():
         headers = {'Authorization': f'Bearer {self.token}'}
         response = requests.get(url, headers=headers, )
         response.raise_for_status()
-        moltin_cart_id = response.json().get('data').get('id')
-        return moltin_cart_id
+        cart = response.json().get('data')
+        return cart
 
     def get_cart_items(self, cart_id):
         if not self.__check_token_alive():
