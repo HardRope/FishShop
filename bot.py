@@ -11,6 +11,7 @@ from telegram.ext import (
     MessageHandler,
 )
 
+from moltin import Moltin
 from telegram_functions.handlers import (
     start,
     main_menu_handler,
@@ -27,7 +28,7 @@ def error(state, error):
     logger.warning(f'State {state} caused error {error}')
 
 
-def handle_users_reply(update, context, db):
+def handle_users_reply(update, context, db, moltin):
     if update.message:
         user_reply = update.message.text
         chat_id = update.message.chat_id
@@ -71,7 +72,8 @@ if __name__ == '__main__':
     )
     env = Env()
     env.read_env()
-
+    moltin_id = env('MOLTIN_CLIENT_ID')
+    moltin_secret = env('MOLTIN_CLIENT_SECRET')
     tg_token = env('TELEGRAM_TOKEN')
     db = redis.Redis(
         host=env('REDIS_HOST'),
@@ -79,8 +81,9 @@ if __name__ == '__main__':
         password=env('REDIS_PASSWORD'),
         decode_responses=True,
     )
+    moltin = Moltin(moltin_id, moltin_secret)
 
-    connected_db_handler = partial(handle_users_reply, db=db)
+    connected_db_handler = partial(handle_users_reply, db=db, moltin=moltin)
 
     updater = Updater(tg_token, use_context=True)
     dispatcher = updater.dispatcher
