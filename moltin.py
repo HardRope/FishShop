@@ -1,5 +1,7 @@
-import requests
 import time
+
+import requests
+
 
 class Moltin():
     def __init__(self, moltin_client_id, moltin_client_secret):
@@ -11,12 +13,12 @@ class Moltin():
 
     def __update_token(self):
         url = 'https://api.moltin.com/oauth/access_token'
-        data = {
+        moltin_credentials = {
             'client_id': self.id,
             'client_secret': self.secret,
             'grant_type': 'client_credentials',
         }
-        response = requests.post(url, data=data)
+        response = requests.post(url, data=moltin_credentials)
         response.raise_for_status()
         token_attributes = response.json()
         self.token = token_attributes.get('access_token')

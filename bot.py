@@ -2,7 +2,6 @@ from environs import Env
 from functools import partial
 import logging
 import redis
-
 from telegram.ext import (
     Filters,
     Updater,
@@ -10,7 +9,6 @@ from telegram.ext import (
     CommandHandler,
     MessageHandler,
 )
-
 from moltin import Moltin
 from telegram_bot.handlers import (
     start,
@@ -18,7 +16,7 @@ from telegram_bot.handlers import (
     products_handler,
     product_handler,
     cart_handler,
-    contact_handler
+    contact_handler,
 )
 
 logger = logging.getLogger(__name__)
@@ -66,7 +64,7 @@ def handle_users_reply(update, context, db, moltin):
 if __name__ == '__main__':
     logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        level=logging.INFO
+        level=logging.INFO,
     )
     env = Env()
     env.read_env()
