@@ -31,7 +31,6 @@ def get_product_text(product):
 def start(update, context):
     chat_id = update.message.chat_id
     message_id = update.message.message_id
-    # send_main_menu(context, chat_id, message_id)
     message_text = 'Добро пожаловать в самый рыбный магазин!'
 
     context.bot.send_message(
